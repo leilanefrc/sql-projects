@@ -16,6 +16,10 @@ con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
 dbWriteTable(con, "table_name", read.csv("file_name.csv"))
 ```
 
-## 1. Online Sports Revenue
+## 1. Motorcycle Parts Sales
+
+<https://github.com/leilanefrc/sql-projects/blob/main/motorcycle-parts-sales.md>
+
+## 2. Online Sports Revenue
 
 <https://github.com/leilanefrc/sql-projects/blob/main/online-sports-revenue.md>
