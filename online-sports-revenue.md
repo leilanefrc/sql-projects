@@ -11,24 +11,13 @@ The data come in four csv files, named “brands.csv”, “finance.csv”,
 “info.csv”, and “reviews.csv”, which I do not make available since the
 project is available to subscribers only.
 
-Here, I use SQL in an R notebook to analyse revenue per brand (Adidas
-and Nike).
+Here, I use SQL in R Markdown to analyse revenue per brand (Adidas and
+Nike).
 
 ### Setting up
 
 First, I set up an SQL database in the memory using the packages DBI and
 RSQLite and write the tables from the csv files.
-
-``` r
-library(DBI)
-
-con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
-
-dbWriteTable(con, "brands", read.csv("~/GitHub/online-sports-revenue/files/brands.csv"))
-dbWriteTable(con, "finance", read.csv("~/GitHub/online-sports-revenue/files/finance.csv"))
-dbWriteTable(con, "info", read.csv("~/GitHub/online-sports-revenue/files/info.csv"))
-dbWriteTable(con, "reviews", read.csv("~/GitHub/online-sports-revenue/files/reviews.csv"))
-```
 
 Here is a look at the first 5 entries in each table:
 
