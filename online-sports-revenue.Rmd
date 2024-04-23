@@ -1,0 +1,101 @@
+---
+title: "Online Sports Revenue in SQL"
+author: "Leilane Cambara"
+output: github_document
+---
+
+The trainers sale data of an online sports clothing company comes from Datacamp, intended to be used in a Python project to answer different questions: https://app.datacamp.com/learn/projects/analyzing_online_sports_revenue/guided/Python.
+
+The data come in four csv files, named "brands.csv", "finance.csv", "info.csv", and "reviews.csv", which I do not make available since the project is available to subscribers only.
+
+Here, I use SQL in an R notebook to analyse revenue per brand (Adidas and Nike).
+
+### Setting up
+
+First, I set up an SQL database in the memory using the packages DBI and RSQLite and write the tables from the csv files.
+
+```{r setup}
+library(DBI)
+
+con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
+
+dbWriteTable(con, "brands", read.csv("~/GitHub/online-sports-revenue/files/brands.csv"))
+dbWriteTable(con, "finance", read.csv("~/GitHub/online-sports-revenue/files/finance.csv"))
+dbWriteTable(con, "info", read.csv("~/GitHub/online-sports-revenue/files/info.csv"))
+dbWriteTable(con, "reviews", read.csv("~/GitHub/online-sports-revenue/files/reviews.csv"))
+```
+
+Here is a look at the first 5 entries in each table:
+
+```{sql echo=TRUE, connection=con}
+SELECT * FROM brands LIMIT 5;
+```
+
+```{sql echo=TRUE, connection=con}
+SELECT * FROM finance LIMIT 5;
+```
+
+```{sql echo=TRUE, connection=con}
+SELECT * FROM info LIMIT 5;
+```
+
+```{sql echo=TRUE, connection=con}
+SELECT * FROM reviews LIMIT 5;
+```
+
+### Joining tables
+
+In one query, I join the tables by their common column, “product_id”. I do not want to include rows with empty values and NA, such that I exclude them in the query.
+
+```{sql echo=TRUE, connection=con}
+SELECT brands.product_id, brand, product_name, listing_price, sale_price, discount, revenue, rating, reviews
+FROM (((brands 
+INNER JOIN info ON brands.product_id = info.product_id)
+INNER JOIN finance ON brands.product_id = finance.product_id)
+INNER JOIN reviews ON brands.product_id = reviews.product_id)
+WHERE brand != "" OR product_name != "" OR listing_price IS NOT NULL OR sale_price IS NOT NULL OR discount IS NOT NULL OR revenue IS NOT NULL OR rating IS NOT NULL OR reviews IS NOT NULL
+LIMIT 10;
+```
+
+### Total revenue per brand
+
+Now, I group by brand to get the total and average revenue of each.
+
+```{sql echo=TRUE, connection=con}
+SELECT brand, SUM(revenue) AS "total_revenue", AVG(revenue) AS "average_renevue"
+FROM (((brands 
+INNER JOIN info ON brands.product_id = info.product_id)
+INNER JOIN finance ON brands.product_id = finance.product_id)
+INNER JOIN reviews ON brands.product_id = reviews.product_id)
+WHERE brand != "" OR product_name != "" OR listing_price IS NOT NULL OR sale_price IS NOT NULL OR discount IS NOT NULL OR revenue IS NOT NULL OR rating IS NOT NULL OR reviews IS NOT NULL
+GROUP BY brand
+LIMIT 10;
+```
+
+Finally, I select the top 10 revenue from each brand.
+
+### Top 10 revenue: Adidas
+
+```{sql echo=TRUE, connection=con}
+SELECT brands.product_id, brand, product_name, sale_price, discount, revenue, rating, reviews
+FROM (((brands 
+INNER JOIN info ON brands.product_id = info.product_id)
+INNER JOIN finance ON brands.product_id = finance.product_id)
+INNER JOIN reviews ON brands.product_id = reviews.product_id)
+WHERE brand = "Adidas" AND (product_name != "" OR listing_price IS NOT NULL OR sale_price IS NOT NULL OR discount IS NOT NULL OR revenue IS NOT NULL OR rating IS NOT NULL OR reviews IS NOT NULL)
+ORDER BY revenue DESC
+LIMIT 10;
+```
+
+### Top 10 revenue: Nike
+
+```{sql echo=TRUE, connection=con}
+SELECT brands.product_id, brand, product_name, sale_price, discount, revenue, rating, reviews
+FROM (((brands 
+INNER JOIN info ON brands.product_id = info.product_id)
+INNER JOIN finance ON brands.product_id = finance.product_id)
+INNER JOIN reviews ON brands.product_id = reviews.product_id)
+WHERE brand = 'Nike' AND (product_name != "" OR listing_price IS NOT NULL OR sale_price IS NOT NULL OR discount IS NOT NULL OR revenue IS NOT NULL OR rating IS NOT NULL OR reviews IS NOT NULL)
+ORDER BY revenue DESC
+LIMIT 10;
+```
