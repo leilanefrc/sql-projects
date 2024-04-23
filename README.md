@@ -9,7 +9,6 @@ the function `dbWriteTables()` to write the tables I want using data
 files (a csv file in the example below):
 
 ``` r
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 library(DBI)
 
 con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
